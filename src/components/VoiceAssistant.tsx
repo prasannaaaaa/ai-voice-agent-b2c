@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Mic, MicOff } from 'lucide-react';
+import { Mic } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -24,23 +24,43 @@ export const VoiceAssistant = () => {
         const reader = new FileReader();
         
         reader.onload = async () => {
-          const base64Audio = reader.result?.toString().split(',')[1];
+          if (!reader.result) {
+            toast.error('Failed to process audio');
+            return;
+          }
+
+          const base64Audio = reader.result.toString().split(',')[1];
           
           try {
             setIsProcessing(true);
+            toast.info('Processing your request...');
+
             const { data, error } = await supabase.functions.invoke('process-voice', {
               body: { audioData: base64Audio }
             });
 
-            if (error) throw error;
+            if (error) {
+              console.error('Supabase function error:', error);
+              toast.error('Failed to process voice input');
+              return;
+            }
+
+            if (!data?.audio) {
+              toast.error('No audio response received');
+              return;
+            }
 
             // Play audio response
             const audioArray = new Uint8Array(data.audio);
             const audioBlob = new Blob([audioArray], { type: 'audio/mp3' });
             const audioUrl = URL.createObjectURL(audioBlob);
             const audio = new Audio(audioUrl);
-            await audio.play();
+            
+            audio.onended = () => {
+              URL.revokeObjectURL(audioUrl);
+            };
 
+            await audio.play();
             toast.success('Response received!');
           } catch (error) {
             console.error('Error processing voice:', error);
@@ -56,6 +76,7 @@ export const VoiceAssistant = () => {
 
       mediaRecorder.current.start();
       setIsListening(true);
+      toast.info('Listening...');
     } catch (error) {
       console.error('Error accessing microphone:', error);
       toast.error('Error accessing microphone');
@@ -87,13 +108,8 @@ export const VoiceAssistant = () => {
           ${isListening ? 'bg-restaurant-primary' : 'bg-restaurant-light hover:bg-restaurant-accent'}`}
         disabled={isProcessing}
       >
-        {isListening ? (
-          <Mic className="w-12 h-12 text-white animate-pulse" />
-        ) : (
-          <Mic className="w-12 h-12 text-restaurant-dark" />
-        )}
+        <Mic className={`w-12 h-12 ${isListening ? 'text-white animate-pulse' : 'text-restaurant-dark'}`} />
         
-        {/* Ripple effect when listening */}
         {isListening && (
           <>
             <div className="absolute w-full h-full rounded-full bg-restaurant-primary opacity-75 animate-wave" />
