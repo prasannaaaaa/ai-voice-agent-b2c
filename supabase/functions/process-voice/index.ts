@@ -42,7 +42,8 @@ serve(async (req) => {
     })
 
     if (!deepgramResponse.ok) {
-      console.error('Deepgram API error:', await deepgramResponse.text())
+      const errorText = await deepgramResponse.text()
+      console.error('Deepgram API error:', errorText)
       throw new Error(`Deepgram API error: ${deepgramResponse.status}`)
     }
 
@@ -56,14 +57,15 @@ serve(async (req) => {
     console.log('Transcription received:', text)
 
     // Generate response with Groq
-    const groqResponse = await fetch('https://api.groq.com/v1/chat/completions', {
+    console.log('Sending request to Groq API...')
+    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${GROQ_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: "mixtral-8x7b-32768",  // Updated to use a valid Groq model
+        model: "mixtral-8x7b-32768",
         messages: [
           {
             role: "system",
@@ -80,11 +82,14 @@ serve(async (req) => {
     })
 
     if (!groqResponse.ok) {
-      console.error('Groq API error response:', await groqResponse.text())
-      throw new Error(`Groq API error: ${groqResponse.status}`)
+      const errorText = await groqResponse.text()
+      console.error('Groq API error response:', errorText)
+      throw new Error(`Groq API error: ${groqResponse.status} - ${errorText}`)
     }
 
     const aiResponse = await groqResponse.json()
+    console.log('Groq API response:', aiResponse)
+    
     const responseText = aiResponse.choices[0]?.message?.content
 
     if (!responseText) {
@@ -104,7 +109,8 @@ serve(async (req) => {
     })
 
     if (!ttsResponse.ok) {
-      console.error('Text-to-speech API error:', await ttsResponse.text())
+      const errorText = await ttsResponse.text()
+      console.error('Text-to-speech API error:', errorText)
       throw new Error(`Text-to-speech API error: ${ttsResponse.status}`)
     }
 
