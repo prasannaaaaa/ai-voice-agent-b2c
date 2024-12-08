@@ -1,11 +1,19 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { VoiceAssistant } from "@/components/VoiceAssistant";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-restaurant-secondary flex flex-col items-center justify-center p-4">
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-restaurant-dark mb-2">AI Restaurant Assistant</h1>
+        <p className="text-lg text-gray-600">Click the microphone to start speaking</p>
+      </div>
+      
+      <div className="bg-white p-8 rounded-2xl shadow-lg">
+        <VoiceAssistant />
+      </div>
+      
+      <div className="mt-8 text-sm text-gray-500 max-w-md text-center">
+        <p>I can help you with restaurant bookings, menu information, and placing orders.</p>
       </div>
     </div>
   );
