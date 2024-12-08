@@ -42,6 +42,7 @@ serve(async (req) => {
     })
 
     if (!deepgramResponse.ok) {
+      console.error('Deepgram API error:', await deepgramResponse.text())
       throw new Error(`Deepgram API error: ${deepgramResponse.status}`)
     }
 
@@ -62,7 +63,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: "gemma-7b-it",
+        model: "mixtral-8x7b-32768",  // Updated to use a valid Groq model
         messages: [
           {
             role: "system",
@@ -79,6 +80,7 @@ serve(async (req) => {
     })
 
     if (!groqResponse.ok) {
+      console.error('Groq API error response:', await groqResponse.text())
       throw new Error(`Groq API error: ${groqResponse.status}`)
     }
 
@@ -102,6 +104,7 @@ serve(async (req) => {
     })
 
     if (!ttsResponse.ok) {
+      console.error('Text-to-speech API error:', await ttsResponse.text())
       throw new Error(`Text-to-speech API error: ${ttsResponse.status}`)
     }
 
